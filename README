@@ -1,0 +1,46 @@
+miniko.js 0.1
+MInimalist basic js lib
+NIKOmomo@gmail.com
+
+==============================================================================
+LICENSE
+==============================================================================
+           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                   Version 2, December 2004
+ 
+Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+ 
+Everyone is permitted to copy and distribute verbatim or modified
+copies of this license document, and changing it is allowed as long
+as the name is changed.
+ 
+           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+  TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+ 
+ 0. You just DO WHAT THE FUCK YOU WANT TO.
+
+==============================================================================
+USES
+==============================================================================
+all "id" parameter can be an element.id or directly an DOM element
+
+  _(id,[content])   : return the DOM element by id, 
+                      and set its content if provided
+  append(id,html)   : append html to id
+  css(id,'class')   : set classname
+  css(id,'+class')  : add class to classname
+  css(id,'-class')  : remove class from classname
+  css(id,'*class')  : toggle class in classname
+  position(id)      : return {left,right,top,bottom,width,height} of id
+  ajax(url,success) : perform a GET ajax call
+  ajax({            : perform an ajax call
+     url: '?'           
+     type: 'GET|DELETE|POST|PUT'
+     data: {...},
+     success: function(data){},
+     error: function(xhr){},
+     datatype: 'application/json',
+     contenttype: 'application/x-www-form-urlencoded',
+     timeout: 30
+  })
+  ready(callback)   : callback when the dom is ready 
