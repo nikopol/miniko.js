@@ -1,10 +1,9 @@
 /*
-miniko.js 0.1
-MInimalist basic js lib
-NIKOmomo@gmail.com
+minimalist basic js lib 0.1
+nikomomo@gmail.com
 
 ==============================================================================
-LICENSE
+license:
 ==============================================================================
            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
                    Version 2, December 2004
@@ -21,7 +20,7 @@ as the name is changed.
  0. You just DO WHAT THE FUCK YOU WANT TO.
 
 ==============================================================================
-USES
+uses:
 ==============================================================================
 all "id" parameter can be an element.id or directly an DOM element
 
@@ -68,13 +67,15 @@ append = function(e,h){
 
 css = function(e,c){
 	var o = _(e),z,l;
-	if(o){
-		if(/^([\+\-\*])?(.*)$/.test(c)) {
-			z = RegExp.$1;
-			c = RegExp.$2;
-			l = o.className.split(' ');
-			if(z!='-' && l.indexOf(c)==-1) l.push(c);        //add class
-			else if(z!='+') l=l.filter(function(n){ n!=c }); //remove class
+	if(!o) return;
+	if(c==undefined) return o.className;
+	if(/^([\+\-\*])?(.+)$/.test(c)) {
+		z = RegExp.$1;
+		c = RegExp.$2;
+		if(z) {
+			l = o.className.split(/\s+/).filter(function(n){return n});
+			if(z!='-' && l.indexOf(c)==-1) l.push(c);  //add class
+			else if(z!='+') l=l.filter(function(n){return n!=c}); //remove class
 			o.className = l.join(' ');
 		} else
 			o.className = c;
