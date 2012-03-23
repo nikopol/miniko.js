@@ -2,26 +2,6 @@
 minimalist basic js lib 0.1
 nikomomo@gmail.com
 
-==============================================================================
-license:
-==============================================================================
-           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-                   Version 2, December 2004
- 
-Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
- 
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
- 
-           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-  TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
- 
- 0. You just DO WHAT THE FUCK YOU WANT TO.
-
-==============================================================================
-uses:
-==============================================================================
 all "id" parameter can be an element.id or directly an DOM element
 
   _(id,[content])   : return the DOM element by id, 
@@ -37,13 +17,36 @@ all "id" parameter can be an element.id or directly an DOM element
      url: '?'           
      type: 'GET|DELETE|POST|PUT'
      data: {...},
-     success: function(data){},
-     error: function(xhr){},
+     success: function(data,xhr){},
+     error: function(responsetext,xhr){},
      datatype: 'application/json',
      contenttype: 'application/x-www-form-urlencoded',
-     timeout: 30
+     timeout: 30,
+     headers: {
+		'key': value
+     }
   })
   ready(callback)   : callback when the dom is ready 
+
+=========================================================================
+LICENSE
+=========================================================================
+
+DO WHAT THE FUCK YOU WANT WITH
+ESPECIALLY IF YOU OFFER ME A BEER
+PUBLIC LICENSE
+Version 1, Mars 2012
+ 
+Copyright (C) 2012 - niko
+ 
+Everyone is permitted to copy and distribute verbatim 
+or modified copies of this license document, and 
+changing it is allowed as long as the name is changed.
+
+DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND 
+MODIFICATION :
+- You just DO WHAT THE FUCK YOU WANT.
 
 */
 
@@ -90,32 +93,28 @@ ajax = function(o,fn){
 		dtyp = o.datatype || 'application/json',
 		xhr  = new window.XMLHttpRequest(),
 		timer,
-		data;
+		d;
 	if(o.data){
+		if(typeof(o.data)=='string') d = o.data;
+		else if(/json/.test(ctyp))   d = JSON.stringify(o.data);
+		else {
+			d = [];
+			for(var n in o.data)
+				d.push(encodeURIComponent(n)+'='+encodeURIComponent(o.data[n]));
+			d = d.join('&');
+		}
 		if(/GET|DEL/i.test(type)) {
-			if(typeof(o.data)!='string'){
-				data = [];
-				for(var n in o.data) data.push(n+'='+encodeURIComponent(o.data[n]));
-				data = data.join('&');
-			}
-			url += (url.indexOf('?')==-1)
-				? '?'+data
-				: '&'+data;
-			data = '';
-		} else if(typeof(o.data)=='string') {
-			data = o.data;
-		} else {
-			ctyp = 'application/json';
-			data = JSON.stringify(o.data);
+			url += /\?/.test(url) ? '&'+d : '?'+d;
+			d = '';
 		}
 	}
 	xhr.onreadystatechange = function(){
 		if(xhr.readyState==4) {
 			if(timer) clearTimeout(timer);
-			if(xhr.status>=200 && xhr.status<300) {
-				if(o.ok) o.ok((/json/.test(dtyp)) ? JSON.parse(xhr.responseText) : xhr.responseText);
-			} else if(o.error) 
-				o.error(xhr);
+			if(xhr.status>=200) {
+				if(o.ok) o.ok(/json/.test(dtyp)?JSON.parse(xhr.responseText):xhr.responseText,xhr);
+			} else if(o.error)
+				o.error(xhr.responseText,xhr);
 		}
 	};
 	xhr.open(type, url, true);
@@ -124,9 +123,9 @@ ajax = function(o,fn){
 	if(o.timeout) timer = setTimeout(function(){
 		xhr.onreadystatechange = function(){};
 		xhr.abort();
-		if(o.error) o.error(xhr,'timeout');
+		if(o.error) o.error('timeout',xhr);
 	}, o.timeout*1000);
-	xhr.send(data);
+	xhr.send(d);
 	return xhr;
 },
 
