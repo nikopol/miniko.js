@@ -1,27 +1,6 @@
-miniko.js 0.1
-MInimalist basic js lib
-NIKOmomo@gmail.com
+minimalist basic js lib 0.1
+nikomomo@gmail.com
 
-==============================================================================
-LICENSE
-==============================================================================
-           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-                   Version 2, December 2004
- 
-Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
- 
-Everyone is permitted to copy and distribute verbatim or modified
-copies of this license document, and changing it is allowed as long
-as the name is changed.
- 
-           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-  TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
- 
- 0. You just DO WHAT THE FUCK YOU WANT TO.
-
-==============================================================================
-USES
-==============================================================================
 all "id" parameter can be an element.id or directly an DOM element
 
   _(id,[content])   : return the DOM element by id, 
@@ -37,10 +16,33 @@ all "id" parameter can be an element.id or directly an DOM element
      url: '?'           
      type: 'GET|DELETE|POST|PUT'
      data: {...},
-     success: function(data){},
-     error: function(xhr){},
+     success: function(data,xhr){},
+     error: function(responsetext,xhr){},
      datatype: 'application/json',
      contenttype: 'application/x-www-form-urlencoded',
-     timeout: 30
+     timeout: 30,
+     headers: {
+    'key': value
+     }
   })
   ready(callback)   : callback when the dom is ready 
+
+=========================================================================
+LICENSE
+=========================================================================
+
+DO WHAT THE FUCK YOU WANT WITH
+ESPECIALLY IF YOU OFFER ME A BEER
+PUBLIC LICENSE
+Version 1, Mars 2012
+ 
+Copyright (C) 2012 - niko
+ 
+Everyone is permitted to copy and distribute verbatim 
+or modified copies of this license document, and 
+changing it is allowed as long as the name is changed.
+
+DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND 
+MODIFICATION :
+- You just DO WHAT THE FUCK YOU WANT.
