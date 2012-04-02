@@ -139,10 +139,9 @@ position = function(e){
 	return p;
 },
 
-_already = false,
-
 ready = function(cb){
-	if(_already) cb();
-	else document.addEventListener('DOMContentLoaded',function(){cb(_already=true)}, false);
+	if(/complete|loaded|interactive/.test(document.readyState)) cb();
+	else if(document.attachEvent) document.attachEvent('ondocumentready',cb()); 
+	else document.addEventListener('DOMContentLoaded',function(){cb()}, false);
 };
 
