@@ -1,3 +1,7 @@
+// miniko.js 0.3
+// ~L~ nikomomo@gmail.com 2012
+// https://github.com/nikopol/miniko.js
+
 /*
 miniko.js 0.3
 =============
