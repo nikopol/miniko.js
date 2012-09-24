@@ -1,19 +1,38 @@
 /*
-minimalist basic js lib 0.2
-nikomomo@gmail.com
+miniko.js 0.3
+=============
+minimalist basic js lib for "modern" browsers
+nikomomo@gmail.com 2012  
 
-all "id" parameter can be an element.id or directly an DOM element
+**selectors**
 
-  _(id,[content])   : return the DOM element by id, 
-                      and set its content if provided
-  append(id,html)   : append html to id
-  css(id,'class')   : set classname
-  css(id,'+class')  : add class to classname
-  css(id,'-class')  : remove class from classname
-  css(id,'*class')  : toggle class in classname
-  position(id)      : return {left,right,top,bottom,width,height} of id
-  ajax(url,ok)      :  perform a GET ajax call
-  ajax({            : perform an ajax call
+if content is provided, all matching element will have it.
+
+  _(element,[content])    : return the element provided
+  _("#id",[content])      : return the element by id
+  _(".class",[content])   : return an elements array matching a classname
+  _("selector",[content]) : return an elements array matching a selector
+
+**manipulation**
+
+  append(sel,html)        : append html to matching element(s)
+
+**style**  
+
+  css(sel,'class')        : set classname to matching element(s)
+  css(sel,'+class')       : add class to matching element(s)
+  css(sel,'-class')       : remove class to matching element(s)
+  css(sel,'*class')       : toggle class to matching element(s)
+  
+**geometry**
+
+  position(element)
+  position("#id")         : return {left,right,top,bottom,width,height}
+
+**ajax**
+  
+  ajax(url,ok)            : perform a GET ajax call
+  ajax({                  : perform an ajax call
      url: '?'           
      type: 'GET|DELETE|POST|PUT'
      data: {...},
@@ -23,72 +42,73 @@ all "id" parameter can be an element.id or directly an DOM element
      contenttype: 'application/x-www-form-urlencoded',
      timeout: 30,
      headers: {
-		'key': value
+      'key': value
      }
   })
-  ready(callback)   : callback when the dom is ready
-  browser           : hash with browser information, eg:
-                       Firefox 11 => { Firefox:11, Gecko:20100101, Mozilla:5 }
-                      Chromium 18 => { Chrome:18, Safari:535.19, Mozilla:5 }
-                             IE 9 => { IE:9, Mozilla:5 }
-                             IE 8 => { IE:8, Mozilla:4 }
-                             IE 7 => { IE:7, Mozilla:4 }
-                          Opera 9 => { Opera: 9.8, Presto: 2.1, Version: 11.61 }
-                         Safari 5 => { Version:5.1, Safari:534.52, Mozilla:5 }
+  
+**events**
 
-=========================================================================
-LICENSE
-=========================================================================
+  ready(callback) : callback when the dom is ready
+  
+**misc**
 
-DO WHAT THE FUCK YOU WANT WITH
-ESPECIALLY IF YOU OFFER ME A BEER
-PUBLIC LICENSE
-Version 1, Mars 2012
- 
-Copyright (C) 2012 - niko
- 
-Everyone is permitted to copy and distribute verbatim 
-or modified copies of this license document, and 
-changing it is allowed as long as the name is changed.
-
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND 
-MODIFICATION :
-- You just DO WHAT THE FUCK YOU WANT.
-
+  browser  : hash with browser information, eg:
+	           Firefox 11 => { Firefox:11, Gecko:20100101, Mozilla:5 }
+	          Chromium 18 => { Chrome:18, Safari:535.19, Mozilla:5 }
+	                 IE 9 => { IE:9, Mozilla:5 }
+	                 IE 8 => { IE:8, Mozilla:4 }
+	                 IE 7 => { IE:7, Mozilla:4 }
+	              Opera 9 => { Opera: 9.8, Presto: 2.1, Version: 11.61 }
+	             Safari 5 => { Version:5.1, Safari:534.52, Mozilla:5 }
 */
+
+"use strict";
 
 var
 
-_ = function(e,h){
-	var o = typeof(e)=='string' ? window.document.getElementById(e) : e;
-	if(o && h!=undefined) o.innerHTML = h;
-	return o;
-},
+__ = function(o){ return o instanceof Array ? o : [o]; },
 
-append = function(e,h){
-	var o = _(e);
-	if(o) {
-		var z = document.createElement('div');
-		z.innerHTML = h;
-		while(z.childNodes.length) o.appendChild(z.childNodes[0]);
+_ = function(s,h){
+	var o,l,n;
+	if(typeof(s)=='object') o = s;
+	else if(s.length) {
+		if(s[0]=='#')       o = document.getElementById(s.substr(1));
+		else {
+			if(s[0]=='.')   l = document.getElementsByClassName(s.substr(1));
+			else            l = document.querySelectorAll(s);
+			for(o=[],n=0; n<l.length; ++n) o.push(l[n]);
+		}
 	}
+	if(o && h!=undefined) __(o).forEach(function(e){ e.innerHTML = h });
 	return o;
 },
 
-css = function(e,c){
-	var o = _(e),z,l;
+append = function(s,h){
+	var o = _(s);
+	if(o)
+		__(o).forEach(function(e){
+			var c = document.createElement('div');
+			c.innerHTML = h;
+			while(c.childNodes.length) e.appendChild(c.childNodes[0]);
+		});
+	return o;
+},
+
+css = function(s,c){
+	var o = _(s),z,l;
 	if(!o) return;
-	if(c==undefined) return o.className;
+	if(c==undefined) return o instanceof Array ? o : o.className;
 	if(/^([\+\-\*])(.+)$/.test(c)) {
 		z = RegExp.$1;
 		c = RegExp.$2;
-		l = o.className.split(/\s+/).filter(function(n){return n});
-		if(z!='-' && l.indexOf(c)==-1) l.push(c);  //add class
-		else if(z!='+') l=l.filter(function(n){return n!=c}); //remove class
-		o.className = l.join(' ');
+		__(o).forEach(function(e){
+			l = e.className.split(/\s+/).filter(function(n){return n});
+			if(z!='-' && l.indexOf(c)==-1) l.push(c);  //add class
+			else if(z!='+') l=l.filter(function(n){return n!=c}); //remove class
+			o.className = l.join(' ');
+		});
 	} else
-		o.className = c;
+		__(o).forEach(function(e){ e.className = c });
 	return o;
 },
 
@@ -116,12 +136,19 @@ ajax = function(o,fn){
 			d = '';
 		}
 	}
+	if(!o.error) o.error=function(t,xhr){ console.error(t,xhr) };
+	if(!o.ok)    o.ok=function(){};
 	xhr.onreadystatechange = function(){
 		if(xhr.readyState==4) {
 			if(timer) clearTimeout(timer);
 			if(xhr.status>=200) {
-				if(o.ok) o.ok(/json/.test(dtyp)?JSON.parse(xhr.responseText):xhr.responseText,xhr);
-			} else if(o.error)
+				d=xhr.responseText;
+				if(/json/.test(dtyp)) {
+					try { d = JSON.parse(xhr.responseText) }
+					catch(e) { return o.error('json parse error: '+e.message,xhr) }
+				}
+				o.ok(d,xhr);
+			} else
 				o.error(xhr.responseText,xhr);
 		}
 	};
