@@ -12,12 +12,12 @@ all "id" parameter can be an element.id or directly an DOM element
   css(id,'-class')  : remove class from classname
   css(id,'*class')  : toggle class in classname
   position(id)      : return {left,right,top,bottom,width,height} of id
-  ajax(url,success) : perform a GET ajax call
+  ajax(url,ok)      :  perform a GET ajax call
   ajax({            : perform an ajax call
      url: '?'           
      type: 'GET|DELETE|POST|PUT'
      data: {...},
-     success: function(data,xhr){},
+     ok: function(data,xhr){},
      error: function(responsetext,xhr){},
      datatype: 'application/json',
      contenttype: 'application/x-www-form-urlencoded',
