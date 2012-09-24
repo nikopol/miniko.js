@@ -1,5 +1,5 @@
 /*
-minimalist basic js lib 0.1
+minimalist basic js lib 0.2
 nikomomo@gmail.com
 
 all "id" parameter can be an element.id or directly an DOM element
@@ -26,7 +26,15 @@ all "id" parameter can be an element.id or directly an DOM element
 		'key': value
      }
   })
-  ready(callback)   : callback when the dom is ready 
+  ready(callback)   : callback when the dom is ready
+  browser           : hash with browser information, eg:
+                       Firefox 11 => { Firefox:11, Gecko:20100101, Mozilla:5 }
+                      Chromium 18 => { Chrome:18, Safari:535.19, Mozilla:5 }
+                             IE 9 => { IE:9, Mozilla:5 }
+                             IE 8 => { IE:8, Mozilla:4 }
+                             IE 7 => { IE:7, Mozilla:4 }
+                          Opera 9 => { Opera: 9.8, Presto: 2.1, Version: 11.61 }
+                         Safari 5 => { Version:5.1, Safari:534.52, Mozilla:5 }
 
 =========================================================================
 LICENSE
@@ -143,5 +151,11 @@ ready = function(cb){
 	if(/complete|loaded|interactive/.test(document.readyState)) cb();
 	else if(document.attachEvent) document.attachEvent('ondocumentready',cb()); 
 	else document.addEventListener('DOMContentLoaded',function(){cb()}, false);
-};
+},
 
+browser = function(){
+	var b = {}, z = navigator.userAgent;
+	if(/MSIE\s([\d\.]+)/.test(z)) b.IE = parseFloat(RegExp.$1);
+	z.replace(/\s\(.+\)/g,'').split(' ').forEach(function(n){ if(/^(.+)\/(.+)$/.test(n)) b[RegExp.$1] = parseFloat(RegExp.$2) });
+	return b;
+}();
