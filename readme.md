@@ -48,14 +48,3 @@ if content is provided, all matching element will have it.
 **events**
 
 	ready(callback) : callback when the dom is ready
-
-**misc**
-
-	browser : hash with browser information, eg:
-	       Firefox 11 => { Firefox:11, Gecko:20100101, Mozilla:5 }
-	      Chromium 18 => { Chrome:18, Safari:535.19, Mozilla:5 }
-	             IE 9 => { IE:9, Mozilla:5 }
-	             IE 8 => { IE:8, Mozilla:4 }
-	             IE 7 => { IE:7, Mozilla:4 }
-	          Opera 9 => { Opera: 9.8, Presto: 2.1, Version: 11.61 }
-	         Safari 5 => { Version:5.1, Safari:534.52, Mozilla:5 }

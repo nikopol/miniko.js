@@ -3,11 +3,6 @@
 // https://github.com/nikopol/miniko.js
 
 /*
-miniko.js 0.3
-=============
-minimalist basic js lib for "modern" browsers
-nikomomo@gmail.com 2012  
-
 **selectors**
 
 if content is provided, all matching element will have it.
@@ -53,17 +48,7 @@ if content is provided, all matching element will have it.
 **events**
 
   ready(callback) : callback when the dom is ready
-  
-**misc**
 
-  browser  : hash with browser information, eg:
-	           Firefox 11 => { Firefox:11, Gecko:20100101, Mozilla:5 }
-	          Chromium 18 => { Chrome:18, Safari:535.19, Mozilla:5 }
-	                 IE 9 => { IE:9, Mozilla:5 }
-	                 IE 8 => { IE:8, Mozilla:4 }
-	                 IE 7 => { IE:7, Mozilla:4 }
-	              Opera 9 => { Opera: 9.8, Presto: 2.1, Version: 11.61 }
-	             Safari 5 => { Version:5.1, Safari:534.52, Mozilla:5 }
 */
 
 "use strict";
@@ -182,11 +167,4 @@ ready = function(cb){
 	if(/complete|loaded|interactive/.test(document.readyState)) cb();
 	else if(document.attachEvent) document.attachEvent('ondocumentready',cb()); 
 	else document.addEventListener('DOMContentLoaded',function(){cb()}, false);
-},
-
-browser = function(){
-	var b = {}, z = navigator.userAgent;
-	if(/MSIE\s([\d\.]+)/.test(z)) b.IE = parseFloat(RegExp.$1);
-	z.replace(/\s\(.+\)/g,'').split(' ').forEach(function(n){ if(/^(.+)\/(.+)$/.test(n)) b[RegExp.$1] = parseFloat(RegExp.$2) });
-	return b;
-}();
+};
