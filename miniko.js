@@ -130,7 +130,7 @@ ajax = function(o,fn){
 	xhr.onreadystatechange = function(){
 		if(xhr.readyState==4) {
 			if(timer) clearTimeout(timer);
-			if(xhr.status>=200) {
+			if(/^2/.test(xhr.status)) {
 				d=xhr.responseText;
 				if(/json/.test(dtyp)) {
 					try { d = JSON.parse(xhr.responseText) }
