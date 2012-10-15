@@ -61,10 +61,9 @@ _ = function(s,h){
 	var o,l,n;
 	if(typeof(s)=='object') o = s;
 	else if(s.length) {
-		if(s[0]=='#')       o = document.getElementById(s.substr(1));
+		if(s[0]=='#' && !/[ \.\>\<]/.test(s)) o = document.getElementById(s.substr(1));
 		else {
-			if(s[0]=='.')   l = document.getElementsByClassName(s.substr(1));
-			else            l = document.querySelectorAll(s);
+			l = document.querySelectorAll(s);
 			for(o=[],n=0; n<l.length; ++n) o.push(l[n]);
 		}
 	}
@@ -109,14 +108,13 @@ ajax = function(o,fn){
 		ctyp = o.contenttype || 'application/x-www-form-urlencoded',
 		dtyp = o.datatype || 'application/json',
 		xhr  = new window.XMLHttpRequest(),
-		timer,
-		d;
+		timer,d,n;
 	if(o.data){
 		if(typeof(o.data)=='string') d = o.data;
 		else if(/json/.test(ctyp))   d = JSON.stringify(o.data);
 		else {
 			d = [];
-			for(var n in o.data)
+			for(n in o.data)
 				d.push(encodeURIComponent(n)+'='+encodeURIComponent(o.data[n]));
 			d = d.join('&');
 		}
@@ -143,7 +141,7 @@ ajax = function(o,fn){
 	};
 	xhr.open(type, url, true);
 	xhr.setRequestHeader('Content-Type', ctyp);
-	if(o.headers) for(var n in o.headers) xhr.setRequestHeader(n, o.headers[n]);
+	if(o.headers) for(n in o.headers) xhr.setRequestHeader(n, o.headers[n]);
 	if(o.timeout) timer = setTimeout(function(){
 		xhr.onreadystatechange = function(){};
 		xhr.abort();
