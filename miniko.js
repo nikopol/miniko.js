@@ -152,13 +152,15 @@ ajax = function(o,fn){
 },
 
 position = function(e){
-	var	o = _(e), p = {};
+	var	o = _(e);
 	if(o) {
-		p = o.getBoundingClientRect();
-		p.left += window.pageXOffset;
-		p.top += window.pageYOffset;
+		var r = o.getBoundingClientRect();
+		return {
+			left: r.left+window.pageXOffset,
+			top: r.top+window.pageYOffset
+		};
 	}
-	return p;
+	return false;
 },
 
 ready = function(cb){
