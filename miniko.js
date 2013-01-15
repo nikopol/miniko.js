@@ -1,5 +1,5 @@
-// miniko.js 0.3
-// ~L~ nikomomo@gmail.com 2012
+// miniko.js 0.4
+// ~L~ nikomomo@gmail.com 2012-2013
 // https://github.com/nikopol/miniko.js
 
 /*
@@ -22,11 +22,12 @@ if content is provided, all matching element will have it.
   css(sel,'+class')       : add class to matching element(s)
   css(sel,'-class')       : remove class to matching element(s)
   css(sel,'*class')       : toggle class to matching element(s)
+  css(sel,{style:value})  : style's values to matching element(s)
   
 **geometry**
 
   position(element)
-  position("#id")         : return {left,right,top,bottom,width,height}
+  position("#id")         : return {left,top,width,height}
 
 **ajax**
   
@@ -86,7 +87,9 @@ css = function(s,c){
 	var o = _(s),z,l;
 	if(!o) return;
 	if(c==undefined) return o instanceof Array ? o : o.className;
-	if(/^([\+\-\*])(.+)$/.test(c)) {
+	if(typeof c=='object')
+		for(z in c) s.style[z] = c[z];
+	else if(/^([\+\-\*])(.+)$/.test(c)) {
 		z = RegExp.$1;
 		c = RegExp.$2;
 		__(o).forEach(function(e){
@@ -157,7 +160,9 @@ position = function(e){
 		var r = o.getBoundingClientRect();
 		return {
 			left: r.left+window.pageXOffset,
-			top: r.top+window.pageYOffset
+			top: r.top+window.pageYOffset,
+			width: r.width,
+			height: r.height
 		};
 	}
 	return false;
