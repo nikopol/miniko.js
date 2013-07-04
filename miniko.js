@@ -68,7 +68,7 @@ _ = function(s,h){
 			for(o=[],n=0; n<l.length; ++n) o.push(l[n]);
 		}
 	}
-	if(o && h!=undefined) __(o).forEach(function(e){ e.innerHTML = h });
+	if(o && h!=undefined) __(o).forEach(function(e){ e.innerHTML = h });
 	return o;
 },
 
@@ -106,10 +106,10 @@ css = function(s,c){
 ajax = function(o,fn){
 	if(typeof(o)=='string') o = { url:o, ok:fn };
 	var
-		type = o.type || 'GET',
+		type = o.type || 'GET',
 		url  = o.url || '',
-		ctyp = o.contenttype || 'application/x-www-form-urlencoded',
-		dtyp = o.datatype || 'application/json',
+		ctyp = o.contenttype || 'application/x-www-form-urlencoded',
+		dtyp = o.datatype || 'application/json',
 		xhr  = new window.XMLHttpRequest(),
 		timer,d,n;
 	if(o.data){
