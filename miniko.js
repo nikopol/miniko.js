@@ -170,7 +170,6 @@ if content is provided, all matching element will have it.
 	};
 
 	W.ready = function(cb){
-		console.log('ready state = '+D.readyState);
 		if(/complete|loaded|interactive/.test(D.readyState)) cb();
 		else if(D.attachEvent) D.attachEvent('onD.eady',cb()); 
 		else D.addEventListener('DOMContentLoaded',function(){cb()}, false);
