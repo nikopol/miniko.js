@@ -1,7 +1,5 @@
-miniko.js 0.7
+miniko.js 1.0
 =============
-
-~L~ niko  
 
 minimalist javascript survival library
 
@@ -21,32 +19,32 @@ all these methods setup innerHTML if content is provided
 **manipulation**
 
 ```javascript
-append(sel,html)        //append html to matching element(s)
+_.append(sel,html)        //append html to matching element(s)
 ```
 
 **style**  
 
 ```javascript
-css(sel,'class')        //set/overwrite classname to matching element(s)
-css(sel,'+C1-C2*C3')    //add C1 to matching element(s) and
+_.css(sel,'class')        //set/overwrite classname to matching element(s)
+_.css(sel,'+C1-C2*C3')    //add C1 to matching element(s) and
                         //remove C2 to matching element(s) and
                         //toggle C3 to matching element(s)
-css(sel,'?class')       //return the count of class used by matching element(s)
-css(sel,{style:value})  //style's values to matching element(s)
+_.css(sel,'?class')       //return the count of class used by matching element(s)
+_.css(sel,{style:value})  //style's values to matching element(s)
 ```
   
 **geometry**
 
 ```javascript
-position(element)
-position("#id")       //return {left,top,width,height}
+_.pos(element)
+_.pos("#id")       //return {left,top,width,height}
 ```
 
 **ajax**
   
 ```javascript
-ajax(url,ok)            //perform a GET ajax call
-ajax({                  //perform an ajax call
+_.ajax(url,ok)            //perform a GET ajax call
+_.ajax({                  //perform an ajax call
    url: '?'           
    type: 'GET|DELETE|POST|PUT'
    data: {...},
@@ -64,5 +62,7 @@ ajax({                  //perform an ajax call
 **events**
 
 ```javascript
-ready(callback) // callback when the dom is ready
+_.ready(callback)                   // callback when the dom is ready
+_.on(sel,event,callback[,options])  // bind event to sel
+_.off(sel,event,callback)           // unbind event  sel
 ```
