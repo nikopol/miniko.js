@@ -78,14 +78,15 @@ _(sel, {'-click': fn}})    ;// unbind event from sel
 ```js
 _.fn.yourmethod = function(selection, value){
   //selection can be a DOMElement or an array of [DOMElement]
-  //to manage that, you can use _.forAll
-  return _.forAll(function(elem){
+  //to manage that, you can use _.forAll like that :
+  return _.forAll(selection, function(elem){
     _(elem,'val='+val);
   });
+  //forAll return selection
 };
 
 //now you can use it
-_('body',{yourmethod:42});
+_('body', {yourmethod: 42});
 
 
 //example
