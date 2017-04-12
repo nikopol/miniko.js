@@ -1,5 +1,5 @@
 /*
-miniko.js 2.0
+miniko.js 2.1
 =============
 
 minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
@@ -38,6 +38,7 @@ _(sel, {append: content})  ;// append content to selected elements
 ```js
 _(sel, {css: {style: value}}) ;// set style value's
 _(sel, {css: 'class'})        ;// set/overwrite classname to matching element(s)
+_(sel, {has: 'class'})        ;// return number of element with class
 _(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
                               ;//   remove C2 to matching element(s) and
                               ;//   toggle C3 to matching element(s)
@@ -75,7 +76,7 @@ _(sel, {'-click': fn}})    ;// unbind event from sel
 (function(W){
   "use strict";
   
-  var D = W.document;
+  var D = W.document, rexspace = /\s+/;
 
   function zob(){}
 
@@ -209,42 +210,43 @@ _(sel, {'-click': fn}})    ;// unbind event from sel
 
     css: function(sel, cls){
       var m, z, v, q=/([\+\-\*])([^\+\-\*\s]+)/g;
-      if( def(cls) ) {
-        if( iso(cls) ) {
-          //set mode
+      if( iso(cls) ) {
+        //set mode
+        forall(sel, function(e){
+          for(m in cls) e.style[m] = cls[m];
+        });
+      } else if( /^[\+\-\*]/.test(cls) ) {
+        //add/remove/toggle mode
+        while( (m = q.exec(cls)) !== null ) {
+          z = m[1];
+          v = m[2];
           forall(sel, function(e){
-            for(m in cls) e.style[m] = cls[m];
+            var w = e.className.split(rexspace).filter(function(n){ return n });
+            if( z!='-' && w.indexOf(v)==-1 ) {
+              //add class
+              w.push(v); 
+            } else if( z != '+' ) {
+              //remove class
+              w = w.filter(function(n){ return n!=v }); 
+            }
+            e.className = w.join(' ');
           });
-        } else if( /^[\+\-\*]/.test(cls) ) {
-          //add/remove/toggle mode
-          while( (m = q.exec(cls)) !== null ) {
-            z = m[1];
-            v = m[2];
-            forall(sel, function(e){
-              var w = e.className.split(/\s+/).filter(function(n){ return n });
-              if( z!='-' && w.indexOf(v)==-1 ) {
-                //add class
-                w.push(v); 
-              } else if( z != '+' ) {
-                //remove class
-                w = w.filter(function(n){ return n!=v }); 
-              }
-              e.className = w.join(' ');
-            });
-          }
-        } else if( cls[0] == '?' ) {
-          //test mode
-          m = 0;
-          cls = cls.substr(1);
-          forall(sel, function(e){ 
-            m += e.className.split(' ').filter(function(d){ return d==cls }).length; 
-          });
-          sel = m;
-        } else {
-          forall(sel, function(e){ e.className = cls });
         }
+      } else {
+        //set mode
+        forall(sel, function(e){ e.className = cls });
       }
       return sel;
+    },
+
+    has: function(sel, cls){
+      var n = 0, c = cls.split(rexspace);
+      forall(sel, function(e){
+        n += e.className.split(rexspace).filter(function(f){
+          return c.indexOf(f) != -1;
+        }).length;
+      });
+      return n;
     },
 
     on: function(sel, events, fn){
@@ -271,7 +273,7 @@ _(sel, {'-click': fn}})    ;// unbind event from sel
 
   //all in one to rule them all
   function _(sel, ope){
-    var o, l, n, fn, p, ts = typeof(sel);
+    var o, l, n, ts = typeof(sel);
     if( def(sel) ) {
       if( ts == 'function' ) {
         //first argument is a function -> on ready
@@ -305,13 +307,13 @@ _(sel, {'-click': fn}})    ;// unbind event from sel
             ope = {content: ope};
           if( iso(ope) ) 
             for( n in ope ) {
-              typeof(ope[n]) !== 'function'
-                ? $[n] && $[n](o, ope[n])
-                  //hack for events
-                  : n[0] == '-'
-                    ? $.off(o, n.substr(1), ope[n])
-                    : $.on(o, n, ope[n])
-              ;                
+              if( typeof(ope[n])=='function' )
+                //hack for -events
+                n[0] == '-'
+                  ? $.off(o, n.substr(1), ope[n])
+                  : $.on(o, n, ope[n]);
+              else if( $[n] )
+                o = $[n](o, ope[n]);
             }
         }
       }
@@ -319,6 +321,7 @@ _(sel, {'-click': fn}})    ;// unbind event from sel
     return o;
   }
 
+  _.fn = $;
   W._ = _;
 
 })(window);

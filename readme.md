@@ -1,4 +1,4 @@
-miniko.js 2.0
+miniko.js 2.1
 =============
 
 minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
@@ -37,6 +37,7 @@ _(sel, {append: content})  ;// append content to selected elements
 ```js
 _(sel, {css: {style: value}}) ;// set style value's
 _(sel, {css: 'class'})        ;// set/overwrite classname to matching element(s)
+_(sel, {has: 'class'})        ;// return number of element with class
 _(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
                               ;//   remove C2 to matching element(s) and
                               ;//   toggle C3 to matching element(s)
