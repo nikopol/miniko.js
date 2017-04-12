@@ -13,6 +13,7 @@ _('body', {append: _("<button>hit me!</button>", {css: {color: "red"},
 );
 
 _('body button','slap me!');
+
 ```
 
 ### SELECTORS
@@ -69,3 +70,33 @@ _(fn)                      ;// call fn when the dom is ready
 _(sel, {click: fn})        ;// bind event to sel
 _(sel, {'-click': fn}})    ;// unbind event from sel
 ```
+
+### PLUGIN: MAKE YOUR OWN METHOD
+
+
+```js
+_.fn.yourmethod = function(selection, value){
+  //selection can be a DOMElement or an array of [DOMElement]
+  //to manage that, you can use _.forAll
+  return _.forAll(function(elem){
+    _(elem,'val='+val);
+  });
+};
+
+//now you can use it
+_('body',{yourmethod:42});
+
+
+//example
+_.fn.find = function(sel,val){
+  var found = [];
+  _.forAll(sel, function(elem){
+    if( elem.querySelectorAll )
+      found = found.concat(
+        [].slice.call(elem.querySelectorAll(val))
+      );
+  });
+  return found;
+};
+
+_('div',{find: "span.active"});
