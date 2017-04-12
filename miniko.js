@@ -322,6 +322,7 @@ _(sel, {'-click': fn}})    ;// unbind event from sel
   }
 
   _.fn = $;
+  _.forAll = forall;
   W._ = _;
 
 })(window);
