@@ -1,13 +1,31 @@
 /*
-miniko.js 2.1
+miniko.js 2.3
 =============
 
-minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
+minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.  
+
+the base of this mini-lib is to return a *true* Array of DOM Elements
+```js
+_('div').forEach(function(e){
+  e.style.backgroundColor = 'red';
+});
+```
+except for the _('#id') selector returning directly the DOM element.
+```js
+_('#id').style.backgroundColor = 'red';
+```
+
 
 *sample usage*:
 ```js
-_('body', {append: _("<button>hit me!</button>", {css: {color: "red"},
-                                                  click: function(){ console.log("click!") }}),
+var but = _(
+  "<button>hit me!</button>", {
+    css: {color: "red"},
+    click: function(){ console.log("click!") }
+  }
+);
+
+_('body', {append: but,
            css: {padding: "50px",
                  "text-align": "center"}
           }
@@ -51,11 +69,12 @@ _(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
 _({url: '?'
    type: 'GET'                                       ;default value       
    data: {var1:val1},
-   ok: function(data,xhr){},
-   error: function(responsetext,xhr){},
+   ok: function(data,xhr){},                         ; called on success
+   error: function(responsetext,xhr){},              ; called on error
+   done: function(responsetext,xhr){},               ; called after ok or error
    datatype: 'application/json',                     ;default value
    contenttype: 'application/x-www-form-urlencoded', ;default value
-   timeout: 30,                                      ;default value
+   timeout: 30,                                      ;default value (in seconds)
    headers: {key: value}
 })
 ```
@@ -63,33 +82,35 @@ _({url: '?'
 *notes*:
 - return a XMLHttpRequest object
 - use `{contenttype: 'application/json'}` if you want your data automatically serialized in json.
+- default settings are in the object _.ajax and are overridable
   
 ### EVENTS
 
 ```js
 _(fn)                      ;// call fn when the dom is ready
-_(sel, {click: fn})        ;// bind event to sel
-_(sel, {'-click': fn}})    ;// unbind event from sel
+_(sel, {click: fn})        ;// bind event to fn for sel
+_(sel, {'-click': fn}})    ;// unbind fn from event for sel
+```
+
+### TOOLS
+
+```js
+_.isObject(o)              ;// => return true if o={...} only
+_.isDefined(o)             ;// => return o!==undefined && o!==null
+_.forAll(o, fn)            ;// => tranform o in array (if necessary) and apply a forEach(fn)
+_.debounce(fn[, ms])       ;// => debounce 'fn' with 'ms' delay (default delay=200ms)
+
+//example
+_(window, {
+  resize: _.debounce(function(e){ console.log(e) }, 1000)
+})
 ```
 
 ### PLUGIN: MAKE YOUR OWN METHOD
 
 
 ```js
-_.fn.yourmethod = function(selection, value){
-  //selection can be a DOMElement or an array of [DOMElement]
-  //to manage that, you can use _.forAll like that :
-  return _.forAll(selection, function(elem){
-    _(elem,'val='+val);
-  });
-  //forAll return selection
-};
-
-//now you can use it
-_('body', {yourmethod: 42});
-
-
-//example
+//find children elements matching a selector
 _.fn.find = function(sel,val){
   var found = [];
   _.forAll(sel, function(elem){
@@ -101,13 +122,15 @@ _.fn.find = function(sel,val){
   return found;
 };
 
-_('div',{find: "span.active"});
+//now you can use it
+_('div', {find: "span.active"});
+```
 */
 
 (function(W){
   "use strict";
   
-  var D = W.document, rexspace = /\s+/;
+  var D = W.document, rexspaces = /\s+/;
 
   function zob(){}
 
@@ -145,23 +168,33 @@ _('div',{find: "span.active"});
     ;
   }
 
+  var ajaxdft = {
+    type: 'GET',
+    url: '',
+    data: false,
+    headers: {},
+    contenttype: 'application/x-www-form-urlencoded',
+    datatype: 'application/json',
+    error: zob,
+    ok: zob,
+    done: zob,
+    timeout: false
+  };
+
   //performs an ajax call
   function ajax(o, fn){
-    var
-      app  = 'application/',
-      type = o.type || 'GET',
-      url  = o.url || '',
-      ctyp = o.contenttype || app+'x-www-form-urlencoded',
-      dtyp = o.datatype || app+'json',
-      efn  = o.error || zob,
-      ofn  = o.ok || zob,
-      xhr  = new window.XMLHttpRequest(),
-      timer,d,n;
+    var xhr = new window.XMLHttpRequest(),
+        timer, d, n;
+    for( n in ajaxdft )
+      o[n] = o[n] || ajaxdft[n];
     if( o.data ){
       if( typeof(o.data)=='string' )
         //raw body
         d = o.data;
-      else if( /json/.test(ctyp) )
+      else if( o.data.toString()=='[object FormData]' ) {
+        d = o.data;
+        //o.contenttype = false;
+      } else if( /json/.test(o.contenttype) )
         //serialize body as json
         d = JSON.stringify(o.data);
       else {
@@ -171,37 +204,41 @@ _('div',{find: "span.active"});
           d.push(encodeURIComponent(n)+'='+encodeURIComponent(o.data[n]));
         d = d.join('&');
       }
-      if( /GET|DEL/i.test(type) ) {
+      if( /GET|DEL/i.test(o.type) ) {
         //serialize as url arguments
-        url += /\?/.test(url) ? '&'+d : '?'+d;
+        o.url += o.url.indexOf('?')==-1 ? '?'+d : '&'+d;
         d = '';
       }
     }
     xhr.onreadystatechange = function(){
       if( xhr.readyState==4 ) {
-        if( timer ) clearTimeout(timer);
-        if( /^2/.test(xhr.status) ) {
+        clearTimeout(timer);
+        if( (xhr.status+'')[0]=='2' ) {
           d = xhr.responseText;
-          if( /json/.test(dtyp) ) {
+          if( /json/.test(o.datatype) ) {
             try { d = JSON.parse(xhr.responseText) }
-            catch(e) { return efn('json parse error: '+e.message, xhr) }
+            catch(e) { return o.done(o.error('json parse error: '+e.message, xhr)) }
           }
-          ofn(d, xhr);
+          o.done(o.ok(d, xhr));
         } else
-          efn(xhr.responseText, xhr);
+          o.done(o.error(xhr.responseText, xhr));
       }
     };
-    xhr.open(type, url, true);
-    xhr.setRequestHeader('Content-Type', ctyp);
-    if( o.headers ) 
-      for(n in o.headers) 
-        xhr.setRequestHeader(n, o.headers[n]);
+    xhr.open(o.type, o.url, true);
+    if( o.contenttype ) o.headers['Content-Type'] = o.contenttype;
+    for(n in o.headers) 
+      xhr.setRequestHeader(n, o.headers[n]);
     if( o.timeout ) 
       timer = setTimeout(function(){
-        //xhr.onreadystatechange = function(){};
         xhr.abort();
-        efn('timeout',xhr);
+        o.done(o.error('timeout',xhr));
       }, o.timeout*1000);
+    if( o.binary ) {
+      var i, len = d.length, e = new Uint8Array(len);
+      for (i = 0; i < len; i++)
+        e[i] = d.charCodeAt(i) & 0xff;
+      d = e;
+    }
     xhr.send(d);
     return xhr;
   };
@@ -252,7 +289,7 @@ _('div',{find: "span.active"});
           z = m[1];
           v = m[2];
           forall(sel, function(e){
-            var w = e.className.split(rexspace).filter(function(n){ return n });
+            var w = e.className.split(rexspaces).filter(function(n){ return n });
             if( z!='-' && w.indexOf(v)==-1 ) {
               //add class
               w.push(v); 
@@ -271,9 +308,9 @@ _('div',{find: "span.active"});
     },
 
     has: function(sel, cls){
-      var n = 0, c = cls.split(rexspace);
+      var n = 0, c = cls.split(rexspaces);
       forall(sel, function(e){
-        n += e.className.split(rexspace).filter(function(f){
+        n += e.className.split(rexspaces).filter(function(f){
           return c.indexOf(f) != -1;
         }).length;
       });
@@ -353,7 +390,21 @@ _('div',{find: "span.active"});
   }
 
   _.fn = $;
+  _.debounce = function(fn, delay) {
+    var timer;
+    return function(){
+      var self = this, args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(function(){
+        timer = null;
+        fn.apply(self, args);
+      }, delay || 200);
+    };
+  };
+  _.isObject = iso;
+  _.isDefined = def;
   _.forAll = forall;
+  _.ajax = ajaxdft;
   W._ = _;
 
 })(window);

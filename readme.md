@@ -1,12 +1,30 @@
-miniko.js 2.1
+miniko.js 2.3
 =============
 
-minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
+minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.  
+
+the base of this mini-lib is to return a *true* Array of DOM Elements
+```js
+_('div').forEach(function(e){
+  e.style.backgroundColor = 'red';
+});
+```
+except for the _('#id') selector returning directly the DOM element.
+```js
+_('#id').style.backgroundColor = 'red';
+```
+
 
 *sample usage*:
 ```js
-_('body', {append: _("<button>hit me!</button>", {css: {color: "red"},
-                                                  click: function(){ console.log("click!") }}),
+var but = _(
+  "<button>hit me!</button>", {
+    css: {color: "red"},
+    click: function(){ console.log("click!") }
+  }
+);
+
+_('body', {append: but,
            css: {padding: "50px",
                  "text-align": "center"}
           }
@@ -50,11 +68,12 @@ _(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
 _({url: '?'
    type: 'GET'                                       ;default value       
    data: {var1:val1},
-   ok: function(data,xhr){},
-   error: function(responsetext,xhr){},
+   ok: function(data,xhr){},                         ; called on success
+   error: function(responsetext,xhr){},              ; called on error
+   done: function(responsetext,xhr){},               ; called after ok or error
    datatype: 'application/json',                     ;default value
    contenttype: 'application/x-www-form-urlencoded', ;default value
-   timeout: 30,                                      ;default value
+   timeout: 30,                                      ;default value (in seconds)
    headers: {key: value}
 })
 ```
@@ -62,33 +81,35 @@ _({url: '?'
 *notes*:
 - return a XMLHttpRequest object
 - use `{contenttype: 'application/json'}` if you want your data automatically serialized in json.
+- default settings are in the object _.ajax and are overridable
   
 ### EVENTS
 
 ```js
 _(fn)                      ;// call fn when the dom is ready
-_(sel, {click: fn})        ;// bind event to sel
-_(sel, {'-click': fn}})    ;// unbind event from sel
+_(sel, {click: fn})        ;// bind event to fn for sel
+_(sel, {'-click': fn}})    ;// unbind fn from event for sel
+```
+
+### TOOLS
+
+```js
+_.isObject(o)              ;// => return true if o={...} only
+_.isDefined(o)             ;// => return o!==undefined && o!==null
+_.forAll(o, fn)            ;// => tranform o in array (if necessary) and apply a forEach(fn)
+_.debounce(fn[, ms])       ;// => debounce 'fn' with 'ms' delay (default delay=200ms)
+
+//example
+_(window, {
+  resize: _.debounce(function(e){ console.log(e) }, 1000)
+})
 ```
 
 ### PLUGIN: MAKE YOUR OWN METHOD
 
 
 ```js
-_.fn.yourmethod = function(selection, value){
-  //selection can be a DOMElement or an array of [DOMElement]
-  //to manage that, you can use _.forAll like that :
-  return _.forAll(selection, function(elem){
-    _(elem,'val='+val);
-  });
-  //forAll return selection
-};
-
-//now you can use it
-_('body', {yourmethod: 42});
-
-
-//example
+//find children elements matching a selector
 _.fn.find = function(sel,val){
   var found = [];
   _.forAll(sel, function(elem){
@@ -100,4 +121,6 @@ _.fn.find = function(sel,val){
   return found;
 };
 
-_('div',{find: "span.active"});
+//now you can use it
+_('div', {find: "span.active"});
+```
