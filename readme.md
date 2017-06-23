@@ -1,4 +1,4 @@
-miniko.js 2.3
+miniko.js 2.4
 =============
 
 minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.  
@@ -43,12 +43,15 @@ _("<el>...</el>")    ;// create and return an array of DOM Element(s)
 _("tag, .classname") ;// return an elements array matching the selection
 ```
 
-### HTML
+### DOM
 
 ```js
 _(sel, content)            ;// set content of selected elements
 _(sel, {content: content}) ;// set content of selected elements
 _(sel, {append: content})  ;// append content to selected elements
+_(sel, {remove: true|fn})  ;// remove selected elements from dom if true 
+                            // or fn(element) returns true
+_(sel, fn)                 ;// call fn for each elements of sel
 ```
 
 ### CSS
@@ -68,9 +71,9 @@ _(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
 _({url: '?'
    type: 'GET'                                       ;default value       
    data: {var1:val1},
-   ok: function(data,xhr){},                         ; called on success
-   error: function(responsetext,xhr){},              ; called on error
-   done: function(responsetext,xhr){},               ; called after ok or error
+   ok: function(data,xhr){},                         ;called on success
+   error: function(responsetext,xhr){},              ;called on error
+   done: function(responsetext,xhr){},               ;called after ok or error
    datatype: 'application/json',                     ;default value
    contenttype: 'application/x-www-form-urlencoded', ;default value
    timeout: 30,                                      ;default value (in seconds)
