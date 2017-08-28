@@ -1,8 +1,8 @@
 /*
-miniko.js 2.4
+miniko.js 2.6
 =============
 
-minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.  
+minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
 
 the base of this mini-lib is to return a *true* Array of DOM Elements
 ```js
@@ -19,20 +19,27 @@ _('#id').style.backgroundColor = 'red';
 *sample usage*:
 ```js
 var but = _(
-  "<button>hit me!</button>", {
-    css: {color: "red"},
-    click: function(){ console.log("click!") }
+  "<button>ok</button>",  //create a button
+  {
+    css: {color: "red"},  //set button style
+    click: function(){    //set button on-click action
+      console.log("click!")
+    }
   }
 );
 
-_('body', {append: but,
-           css: {padding: "50px",
-                 "text-align": "center"}
-          }
+_('body',        //select body
+  {
+    append: but, //append the but to body
+    css: {       //setup some css to body
+      padding: "50px",
+      "text-align": "center"
+    }
+  }
 );
 
+//change button text
 _('body button','slap me!');
-
 ```
 
 ### SELECTORS
@@ -50,7 +57,7 @@ _("tag, .classname") ;// return an elements array matching the selection
 _(sel, content)            ;// set content of selected elements
 _(sel, {content: content}) ;// set content of selected elements
 _(sel, {append: content})  ;// append content to selected elements
-_(sel, {remove: true|fn})  ;// remove selected elements from dom if true 
+_(sel, {remove: true|fn})  ;// remove selected elements from dom if true
                             // or fn(element) returns true
 _(sel, fn)                 ;// call fn for each elements of sel
 ```
@@ -70,7 +77,7 @@ _(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
 
 ```js
 _({url: '?'
-   type: 'GET'                                       ;default value       
+   type: 'GET'                                       ;default value
    data: {var1:val1},
    ok: function(data,xhr){},                         ;called on success
    error: function(responsetext,xhr){},              ;called on error
@@ -86,7 +93,7 @@ _({url: '?'
 - return a XMLHttpRequest object
 - use `{contenttype: 'application/json'}` if you want your data automatically serialized in json.
 - default settings are in the object _.ajax and are overridable
-  
+
 ### EVENTS
 
 ```js
@@ -99,8 +106,11 @@ _(sel, {'-click': fn}})    ;// unbind fn from event for sel
 
 ```js
 _.isObject(o)              ;// => return true if o={...} only
+_.isArray(o)               ;// => return true if o=[...] only
 _.isDefined(o)             ;// => return o!==undefined && o!==null
 _.forAll(o, fn)            ;// => tranform o in array (if necessary) and apply a forEach(fn)
+_.clone(o)                 ;// => deep clone o
+_.merge(dst,src)           ;// => deep merge src into dst
 _.debounce(fn[, ms])       ;// => debounce 'fn' with 'ms' delay (default delay=200ms)
 
 //example
@@ -132,14 +142,19 @@ _('div', {find: "span.active"});
 
 (function(W){
   "use strict";
-  
+
   var D = W.document, rexspaces = /\s+/;
 
-  function zob(){}
+  function nop(){}
 
   //is a pure object ?
   function iso(o){
     return Object.prototype.toString.call(o) == '[object Object]';
+  }
+
+  //is an array ?
+  function isa(o){
+    return Object.prototype.toString.call(o) == '[object Array]';
   }
 
   //is defined ?
@@ -147,12 +162,23 @@ _('div', {find: "span.active"});
     return o!==undefined && o!==null;
   }
 
+  function merge(dst, src){
+    if( iso(src) ) {
+      if( !iso(dst) ) dst={};
+      for( var k in src )
+        if( src.hasOwnProperty(k) )
+          dst[k]=merge(dst[k], src[k]);
+    } else
+      dst=src;
+    return dst;
+  }
+
   //transform to an array
   function all(sel){
     return !def(sel)
-      ? [] 
-      : sel instanceof Array 
-        ? sel 
+      ? []
+      : sel instanceof Array
+        ? sel
         : [sel]
     ;
   }
@@ -161,6 +187,23 @@ _('div', {find: "span.active"});
   function forall(sel, fn){
     all(sel).forEach(fn);
     return sel;
+  }
+
+  //deep clone
+  function clone(o) {
+    var x;
+    if( !o || typeof o!=='object' )
+      x = o;
+    else if( isa(o) ) {
+      x = [];
+      o.forEach(function(z,n){ x[n] = clone(z) });
+    } else {
+      x = {};
+      for (var k in o)
+        if( o.hasOwnProperty(k) )
+          x[k] = clone(o[k]);
+    }
+    return x;
   }
 
   //callback when dom is ready
@@ -178,26 +221,27 @@ _('div', {find: "span.active"});
     headers: {},
     contenttype: 'application/x-www-form-urlencoded',
     datatype: 'application/json',
-    error: zob,
-    ok: zob,
-    done: zob,
+    error: nop,
+    ok: nop,
+    done: nop,
     timeout: false
   };
 
   //performs an ajax call
   function ajax(o, fn){
     var xhr = new window.XMLHttpRequest(),
-        timer, d, n;
+        wbody, timer, d, n;
     for( n in ajaxdft )
       o[n] = o[n] || ajaxdft[n];
     if( o.data ){
-      if( typeof(o.data)=='string' )
+      wbody = /POST|PUT/i.test(o.type);
+      if( wbody && typeof(o.data)=='string' )
         //raw body
         d = o.data;
-      else if( o.data.toString()=='[object FormData]' ) {
+      else if( wbody && o.data.toString()=='[object FormData]' ) {
         d = o.data;
         //o.contenttype = false;
-      } else if( /json/.test(o.contenttype) )
+      } else if( wbody && /json/.test(o.contenttype) )
         //serialize body as json
         d = JSON.stringify(o.data);
       else {
@@ -207,7 +251,7 @@ _('div', {find: "span.active"});
           d.push(encodeURIComponent(n)+'='+encodeURIComponent(o.data[n]));
         d = d.join('&');
       }
-      if( /GET|DEL/i.test(o.type) ) {
+      if( !wbody ) {
         //serialize as url arguments
         o.url += o.url.indexOf('?')==-1 ? '?'+d : '&'+d;
         d = '';
@@ -216,22 +260,19 @@ _('div', {find: "span.active"});
     xhr.onreadystatechange = function(){
       if( xhr.readyState==4 ) {
         clearTimeout(timer);
-        if( (xhr.status+'')[0]=='2' ) {
-          d = xhr.responseText;
-          if( /json/.test(o.datatype) ) {
-            try { d = JSON.parse(xhr.responseText) }
-            catch(e) { return o.done(o.error('json parse error: '+e.message, xhr)) }
-          }
-          o.done(o.ok(d, xhr));
-        } else
-          o.done(o.error(xhr.responseText, xhr));
+        d = xhr.responseText;
+        if( /json/.test(o.datatype) ) {
+          try { d = JSON.parse(xhr.responseText) }
+          catch(e) { console.log('ajax json parse error: '+e.message, xhr) }
+        }
+        o.done(o[(xhr.status+'')[0]=='2'?'ok':'error'](d, xhr));
       }
     };
     xhr.open(o.type, o.url, true);
     if( o.contenttype ) o.headers['Content-Type'] = o.contenttype;
-    for(n in o.headers) 
+    for(n in o.headers)
       xhr.setRequestHeader(n, o.headers[n]);
-    if( o.timeout ) 
+    if( o.timeout )
       timer = setTimeout(function(){
         xhr.abort();
         o.done(o.error('timeout',xhr));
@@ -247,10 +288,10 @@ _('div', {find: "span.active"});
   };
 
   var $ = {
-    
+
     content: function(sel, content){
       return forall(sel, typeof(content) == 'string'
-        ? function(e){ 
+        ? function(e){
             e.innerHTML = content;
           }
         : function(e){
@@ -272,7 +313,7 @@ _('div', {find: "span.active"});
           while( z.length ) el.appendChild(z[0]);
         } else {
           forall(content, function(e){
-            el.appendChild(e);  
+            el.appendChild(e);
           });
         }
       }
@@ -284,7 +325,7 @@ _('div', {find: "span.active"});
         ? function(e){ fn(e) && e.remove() }
         : fn
           ? function(e){ e.remove() }
-          : zob
+          : nop
       );
     },
 
@@ -304,10 +345,10 @@ _('div', {find: "span.active"});
             var w = e.className.split(rexspaces).filter(function(n){ return n });
             if( z!='-' && w.indexOf(v)==-1 ) {
               //add class
-              w.push(v); 
+              w.push(v);
             } else if( z != '+' ) {
               //remove class
-              w = w.filter(function(n){ return n!=v }); 
+              w = w.filter(function(n){ return n!=v });
             }
             e.className = w.join(' ');
           });
@@ -371,7 +412,7 @@ _('div', {find: "span.active"});
             //selector is html string
             (n = D.createElement('div')).innerHTML = sel;
             l = [].slice.call(n.childNodes);
-            o = l.length 
+            o = l.length
               ? ( l.length>1 ? l : l[0] )
               : undefined;
           } else {
@@ -417,9 +458,12 @@ _('div', {find: "span.active"});
     };
   };
   _.isObject = iso;
+  _.isArray = isa;
   _.isDefined = def;
   _.forAll = forall;
   _.ajax = ajaxdft;
+  _.clone = clone;
+  _.merge = merge;
   W._ = _;
 
 })(window);

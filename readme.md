@@ -1,7 +1,7 @@
-miniko.js 2.4
+miniko.js 2.6
 =============
 
-minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.  
+minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
 
 the base of this mini-lib is to return a *true* Array of DOM Elements
 ```js
@@ -18,20 +18,27 @@ _('#id').style.backgroundColor = 'red';
 *sample usage*:
 ```js
 var but = _(
-  "<button>hit me!</button>", {
-    css: {color: "red"},
-    click: function(){ console.log("click!") }
+  "<button>ok</button>",  //create a button
+  {
+    css: {color: "red"},  //set button style
+    click: function(){    //set button on-click action
+      console.log("click!")
+    }
   }
 );
 
-_('body', {append: but,
-           css: {padding: "50px",
-                 "text-align": "center"}
-          }
+_('body',        //select body
+  {
+    append: but, //append the but to body
+    css: {       //setup some css to body
+      padding: "50px",
+      "text-align": "center"
+    }
+  }
 );
 
+//change button text
 _('body button','slap me!');
-
 ```
 
 ### SELECTORS
@@ -49,7 +56,7 @@ _("tag, .classname") ;// return an elements array matching the selection
 _(sel, content)            ;// set content of selected elements
 _(sel, {content: content}) ;// set content of selected elements
 _(sel, {append: content})  ;// append content to selected elements
-_(sel, {remove: true|fn})  ;// remove selected elements from dom if true 
+_(sel, {remove: true|fn})  ;// remove selected elements from dom if true
                             // or fn(element) returns true
 _(sel, fn)                 ;// call fn for each elements of sel
 ```
@@ -69,7 +76,7 @@ _(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
 
 ```js
 _({url: '?'
-   type: 'GET'                                       ;default value       
+   type: 'GET'                                       ;default value
    data: {var1:val1},
    ok: function(data,xhr){},                         ;called on success
    error: function(responsetext,xhr){},              ;called on error
@@ -85,7 +92,7 @@ _({url: '?'
 - return a XMLHttpRequest object
 - use `{contenttype: 'application/json'}` if you want your data automatically serialized in json.
 - default settings are in the object _.ajax and are overridable
-  
+
 ### EVENTS
 
 ```js
@@ -98,8 +105,11 @@ _(sel, {'-click': fn}})    ;// unbind fn from event for sel
 
 ```js
 _.isObject(o)              ;// => return true if o={...} only
+_.isArray(o)               ;// => return true if o=[...] only
 _.isDefined(o)             ;// => return o!==undefined && o!==null
 _.forAll(o, fn)            ;// => tranform o in array (if necessary) and apply a forEach(fn)
+_.clone(o)                 ;// => deep clone o
+_.merge(dst,src)           ;// => deep merge src into dst
 _.debounce(fn[, ms])       ;// => debounce 'fn' with 'ms' delay (default delay=200ms)
 
 //example
