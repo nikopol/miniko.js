@@ -45,32 +45,33 @@ _('body button','slap me!');
 ### SELECTORS
 
 ```js
-_(element)           ;// return the DOM Element provided
-_("#id")             ;// return the element by id
-_("<el>...</el>")    ;// create and return an array of DOM Element(s)
-_("tag, .classname") ;// return an elements array matching the selection
+_(element)            // return the DOM Element provided
+_("#id")              // return the element by its id
+_("<el>...</el>")     // create the element and return it
+_("<a>.</a><b>.</b>") // create the elements and return them as an array
+_("tag, .classname")  // return an elements array matching the selection
 ```
 
 ### DOM
 
 ```js
-_(sel, content)            ;// set content of selected elements
-_(sel, {content: content}) ;// set content of selected elements
-_(sel, {append: content})  ;// append content to selected elements
-_(sel, {remove: true|fn})  ;// remove selected elements from dom if true
+_(sel, content)             // set content of selected elements
+_(sel, {content: content})  // set content of selected elements
+_(sel, {append: content})   // append content to selected elements
+_(sel, {remove: true|fn})   // remove selected elements from dom if true
                             // or fn(element) returns true
-_(sel, fn)                 ;// call fn for each elements of sel
+_(sel, fn)                  // call fn for each elements of sel
 ```
 
 ### CSS
 
 ```js
-_(sel, {css: {style: value}}) ;// set style value's
-_(sel, {css: 'class'})        ;// set/overwrite classname to matching element(s)
-_(sel, {has: 'class'})        ;// return number of element with class
-_(sel, {css: '+C1-C2*C3'})    ;// add C1 to matching element(s) and
-                              ;//   remove C2 to matching element(s) and
-                              ;//   toggle C3 to matching element(s)
+_(sel, {css: {style: value}})  // set style value's
+_(sel, {css: 'class'})         // set/overwrite classname to matching element(s)
+_(sel, {has: 'class'})         // return number of element with class
+_(sel, {css: '+C1-C2*C3'})     // add C1 to matching element(s) and
+                               //   remove C2 to matching element(s) and
+                               //   toggle C3 to matching element(s)
 ```
 
 ### AJAX
@@ -97,21 +98,21 @@ _({url: '?'
 ### EVENTS
 
 ```js
-_(fn)                      ;// call fn when the dom is ready
-_(sel, {click: fn})        ;// bind event to fn for sel
-_(sel, {'-click': fn}})    ;// unbind fn from event for sel
+_(fn)                       // call fn when the dom is ready
+_(sel, {click: fn})         // bind event to fn for sel
+_(sel, {'-click': fn}})     // unbind fn from event for sel
 ```
 
 ### TOOLS
 
 ```js
-_.isObject(o)              ;// => return true if o={...} only
-_.isArray(o)               ;// => return true if o=[...] only
-_.isDefined(o)             ;// => return o!==undefined && o!==null
-_.forAll(o, fn)            ;// => tranform o in array (if necessary) and apply a forEach(fn)
-_.clone(o)                 ;// => deep clone o
-_.merge(dst,src)           ;// => deep merge src into dst
-_.debounce(fn[, ms])       ;// => debounce 'fn' with 'ms' delay (default delay=200ms)
+_.isObject(o)               // => return true if o={...} only
+_.isArray(o)                // => return true if o=[...] only
+_.isDefined(o)              // => return o!==undefined && o!==null
+_.forAll(o, fn)             // => .forEach(fn) apply to o (changed to an array if necessary)
+_.clone(o)                  // => return a deep clone of o
+_.merge(dst,src1,...)       // => return a deep merge src* into dst
+_.debounce(fn[, ms])        // => debounce 'fn' with 'ms' delay (default delay=200ms)
 
 //example
 _(window, {
@@ -120,7 +121,6 @@ _(window, {
 ```
 
 ### PLUGIN: MAKE YOUR OWN METHOD
-
 
 ```js
 //find children elements matching a selector
@@ -162,14 +162,17 @@ _('div', {find: "span.active"});
     return o!==undefined && o!==null;
   }
 
-  function merge(dst, src){
-    if( iso(src) ) {
-      if( !iso(dst) ) dst={};
-      for( var k in src )
-        if( src.hasOwnProperty(k) )
-          dst[k]=merge(dst[k], src[k]);
-    } else
-      dst=src;
+  //merge arguments
+  function merge(dst){
+    [].slice.call(arguments, 1).forEach(function(src){
+      if( iso(src) ) {
+        if( !iso(dst) ) dst={};
+        for( var k in src )
+          if( src.hasOwnProperty(k) )
+            dst[k]=merge(dst[k], src[k]);
+      } else
+        dst=src;
+    });
     return dst;
   }
 
@@ -196,7 +199,7 @@ _('div', {find: "span.active"});
       x = o;
     else if( isa(o) ) {
       x = [];
-      o.forEach(function(z,n){ x[n] = clone(z) });
+      o.forEach(function(z,n){ x[n] = clone(z) });
     } else {
       x = {};
       for (var k in o)
@@ -408,7 +411,7 @@ _('div', {find: "span.active"});
           if( /^#[^ ,\.\>\<]*$/.test(sel) ) {
             //selector is an #id
             o = D.getElementById(sel.substr(1));
-          } else if( /^<.+>$/.test(sel) ) {
+          } else if( /^<.+>$/.test(sel) ) {
             //selector is html string
             (n = D.createElement('div')).innerHTML = sel;
             l = [].slice.call(n.childNodes);
