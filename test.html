@@ -3,7 +3,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 	<style>
 		body {
-			font: normal 14px 'Monaco','Lucida Console',mono;
+			font: normal 14px 'Monaco', 'Lucida Console', monospace;
 			margin: 0;
 		}
 		h1 {
@@ -47,42 +47,17 @@
       float: right;
     }
   </style>
-	<script src="miniko.js"></script>
+	<script src="miniko.min.js"></script>
   <script>
     "use strict";
 
-    var tests = (function(){
-      var section, tst, ok=0, count=0;
-
-      function createSection(sct){
-        if( sct && sct!=section ) {
-          var h = document.createElement('h2');
-          h.id = sct;
-          h.innerText = sct;
-          document.body.appendChild(h);
-          section = sct;
-        }
-        return this;
-      }
-
-      function createTest(txt,ttp,css){
-        if( txt ) {
-          var d = document.createElement('div');
-          if( ttp ) d.setAttribute('title', ttp);
-          if( css ) d.className = css;
-          d.innerText = txt;
-          document.body.appendChild(d);
-          tst = {
-            text: section + '/' + txt,
-            elem: d
-          };
-        }
-        return this;
-      }
+    const tests = (() => {
+      let section, tst, ok=0, count=0;
 
       function stat(){
         if( count ){
-          var pct = Math.round(ok / count * 100), s = document.getElementById('testat');
+          const pct = Math.round(ok / count * 100),
+                s = document.getElementById('testat');
           s.innerText = ok + '/' + count + ' (' + pct + '%)';
         }
       }
@@ -105,37 +80,53 @@
         return false;
       }
 
-      function is(fn){
-        if( tst ) {
-          console.log('testing', tst.text);
-          if( test(fn, tst) ) tst.elem.className = 'ok';
-        }
-        return this;
-      }
-
-      function are(){
-        console.log('testing', tst.text);
-        var ok = true;
-        [].slice.call(arguments).forEach((t) => ok &= test(t));
-        if( ok ) tst.elem.className = 'ok';
-        return this;
-      }
-
-      function will(fn){
-        if( tst ) fn((ok) => {
-          test(() => ok);
-          if( ok ) tst.elem.className = 'ok';
-        });
-        return this;
-      }
-
       return {
-        test: createTest,
-        section: createSection,
-        is: is,
-        are: are,
-        will: will
-      }
+        test: function(txt, ttp, css){
+          if( txt ) {
+            const d = document.createElement('div');
+            if( ttp ) d.setAttribute('title', ttp);
+            if( css ) d.className = css;
+            d.innerText = txt;
+            document.body.appendChild(d);
+            tst = {
+              text: section + '/' + txt,
+              elem: d
+            };
+          }
+          return this;
+        },
+        section: function(sct){
+          if( sct && sct!==section ) {
+            const h = document.createElement('h2');
+            h.id = sct;
+            h.innerText = sct;
+            document.body.appendChild(h);
+            section = sct;
+          }
+          return this;
+        },
+        is: function(fn){
+          if( tst ) {
+            console.log('testing', tst.text);
+            if( test(fn, tst) ) tst.elem.className = 'ok';
+          }
+          return this;
+        },
+        are: function(){
+          console.log('testing', tst.text);
+          let ok = true;
+          [].slice.call(arguments).forEach(t => ok &= test(t));
+          if( ok ) tst.elem.className = 'ok';
+          return this;
+        },
+        will: function(fn){
+          if( tst ) fn(ok => {
+            test(() => ok);
+            if( ok ) tst.elem.className = 'ok';
+          });
+          return this;
+        }
+      };
     })();
 
     window.onload = function(){
@@ -165,33 +156,58 @@
                       _('#sandbox h1', {remove: true}).length === 1 )
           .test('_(sel, fn)', 'call fn for each elements of sel')
             .is((n) => { _('#sandbox','<span></span><span></span><span></span>');
-                         return _('#sandbox span', function(e){ n++ }) && n === 3 })
+                         return _('#sandbox span', e => n++) && n === 3 })
 
         .section('css')
           .test('_(sel, {css: {style: value}})' ,"'set style value's")
-            .is(() => _('#sandbox',{css:{background:'blue'}}).style.background == 'blue' )
+            .is(() => _('#sandbox', {css:{background:'blue'}}).style.background == 'blue' )
           .test('_(sel, {css: "class"})' ,'set/overwrite classname to matching element(s)')
             .is(() => _('#sandbox', {css:'hidden ok'}).className ==='hidden ok' )
           .test('_(sel, {has: "class"})' ,'return number of element with class')
             .is(() => _('div', {has: 'hidden'}) === 1 )
-          .test('_(sel, {css: "+C1-C2*C3"})' ,'add C1 to matching element(s) and')
-            .is(() => _('#sandbox', {css: '+C1+C2'}) && _('#sandbox', {has: 'C1'}) == 1 &&
-                      _('#sandbox', {css: '*C3'}) && _('#sandbox', {has: 'C3'}) == 1 &&
-                      _('#sandbox', {css: '-C1-C2-C3'}).className == 'hidden' )
+          .test('_(sel, {css: "+C1!C2*C3"})' ,'add/remove/toggle classnames')
+            .is(() => _('#sandbox', {css: '+C1+C2'}) && _('#sandbox', {has: 'C1'}) === 1 &&
+                      _('#sandbox', {css: '*C3'}) && _('#sandbox', {has: 'C3'}) === 1 &&
+                      _('#sandbox', {css: '!C1*C2!C3'}).className === 'hidden' )
 
         .section('ajax')
           .test('_({...})', 'ajax call', 'todo')
 
         .section('events')
           .test('_(fn)', 'call fn when the dom is ready', 'todo')
-            .will((cb) =>  _(() => cb(true)) )
+            .will(cb =>  _(() => cb(true)) )
           .test('_(sel, {click: fn}) ', 'bind event to fn for sel')
-            .will((cb) => _('#sandbox', {click: () =>
+            .will(cb => _('#sandbox', {click: () =>
               cb(true)
             }).click() )
           .test('_(sel, {"-click": fn}})', 'unbind fn from event for sel', 'todo')
 
         .section('tools')
+          .test('_.isDefined(o)', 'return o!==undefined && o!==null')
+            .are(() => _.isDefined() === false,
+                () => _.isDefined(0) === true,
+                () => _.isDefined(42) === true,
+                () => _.isDefined("") === true,
+                () => _.isDefined("\m/") === true,
+                () => _.isDefined(true) === true,
+                () => _.isDefined(false) === true,
+                () => _.isDefined(undefined) === false,
+                () => _.isDefined(null) === false,
+                () => _.isDefined(document) === true,
+                () => _.isDefined([]) === true,
+                () => _.isDefined({}) === true )
+          .test('_.isFunction(fn)', 'return true if fn is a function')
+            .are(() => _.isFunction() === false,
+                 () => _.isFunction(null) === false,
+                 () => _.isFunction(undefined) === false,
+                 () => _.isFunction(window) === false,
+                 () => _.isFunction(x => x) === true)
+          .test('_.isElement(e)', 'return true if e is a DOM Element')
+            .are(() => _.isElement() === false,
+                 () => _.isElement(null) === false,
+                 () => _.isElement(undefined) === false,
+                 () => _.isElement(window) === false,
+                 () => _.isElement(document.body) === true)
           .test('_.isObject(o)', 'return true if o={...} only')
             .are(() => _.isObject() === false,
                  () => _.isObject(0) === false,
@@ -218,28 +234,23 @@
                () => _.isArray(document.childNodes) === false,
                () => _.isArray([]) === true,
                () => _.isArray({}) === false )
-        .test('_.isDefined(o)', 'return o!==undefined && o!==null')
-          .are(() => _.isDefined() === false,
-               () => _.isDefined(0) === true,
-               () => _.isDefined(42) === true,
-               () => _.isDefined("") === true,
-               () => _.isDefined("\m/") === true,
-               () => _.isDefined(true) === true,
-               () => _.isDefined(false) === true,
-               () => _.isDefined(undefined) === false,
-               () => _.isDefined(null) === false,
-               () => _.isDefined(document) === true,
-               () => _.isDefined([]) === true,
-               () => _.isDefined({}) === true )
-        .test('_.forAll(o, fn)', '.forEach(fn) apply to o (changed to an array if necessary)')
-          .are(() => { var a=0;
-                       _.forAll(1, (n) => a += n);
+        .test('_.asArray(o)', "transform o into array if it's not")
+          .are(() => _.asArray().length === 0,
+               () => _.asArray(null).length === 0,
+               () => _.asArray(undefined).length === 0,
+               () => _.asArray(false)[0] === false,
+               () => _.asArray([0])[0] === 0,
+               () => _.asArray([1, 2]).length === 2,
+               () => _.asArray(document.querySelectorAll('DIV')) instanceof Array)
+        .test('_.forAll(o, fn)', 'shortcut for _asArray(o).forEach(fn)')
+          .are(() => { let a=0;
+                       _.forAll(1, n => a += n);
                        return a === 1 },
-               () => { var a=0;
-                       _.forAll([1, 2], (n) => a += n);
+               () => { let a=0;
+                       _.forAll([1, 2], n => a += n);
                        return a === 3 })
         .test('_.clone(o)', 'deep clone o')
-          .is(() => { var a={z:1}, b=_.clone(a);
+          .is(() => { let a={z:1}, b=_.clone(a);
                       b.z = 2;
                       return b.z !== a.z; })
         .test('_.merge(dst,src1,...)', 'deep merge src* into dst')
@@ -250,15 +261,17 @@
                () => _.merge({a: {b: 1}}, {a: {c: 1}}).a.c === 1,
                () => _.merge({a: [1]}, {a: [2]}).a[0] === 2 )
         .test('_.debounce(fn[, ms])', "debounce 'fn' with 'ms' delay", 'todo')
-
+        .test('_.store(k[,v])', 'local storage handy tool')
+          .are(() => _.store('__z',{n:42}) || _.store('__z').n === 42,
+               () => _.store('__z',42) || _.store('__z') === 42,
+               () => _.store('__z','test') || _.store('__z') === 'test',
+               () => _.store('__z',null) || _.store('__z') === null)
       ;
     };
-
 </script>
-
 </head>
 <body>
-	<h1>miniko.js Tests<span id="testat"></span></h1>
+	<h1>miniko.js U.Tests<span id="testat"></span></h1>
 	<div id="sandbox" class="hidden"></div>
 </body>
 </html>

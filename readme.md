@@ -1,13 +1,11 @@
-miniko.js 2.6
+miniko.js 3.2
 =============
 
 minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
 
 the base of this mini-lib is to return a *true* Array of DOM Elements
 ```js
-_('div').forEach(function(e){
-  e.style.backgroundColor = 'red';
-});
+_('div').forEach(e => e.style.backgroundColor = 'red');
 ```
 except for the _('#id') selector returning directly the DOM element.
 ```js
@@ -17,28 +15,30 @@ _('#id').style.backgroundColor = 'red';
 
 *sample usage*:
 ```js
-var but = _(
-  "<button>ok</button>",  //create a button
-  {
-    css: {color: "red"},  //set button style
-    click: function(){    //set button on-click action
-      console.log("click!")
-    }
-  }
-);
+_(() => { //when dom is ready...
 
-_('body',        //select body
-  {
-    append: but, //append the but to body
-    css: {       //setup some css to body
-      padding: "50px",
-      "text-align": "center"
+  const but = _(
+    "<button>ok</button>",  //create a button
+    {
+      css: {color: "red"},  //set button style
+                            //set button on-click action
+      click: () => console.log("click!")
     }
-  }
-);
+  );
 
-//change button text
-_('body button','slap me!');
+  _('body',        //select body
+    {
+      append: but, //append the but to body
+      css: {       //setup some css to body
+        padding: "50px",
+        "text-align": "center"
+      }
+    }
+  );
+
+  //change button text
+  _('body button','slap me!');
+});
 ```
 
 ### SELECTORS
@@ -56,6 +56,7 @@ _("tag, .classname")  // return an elements array matching the selection
 ```js
 _(sel, content)             // set content of selected elements
 _(sel, {content: content})  // set content of selected elements
+_(sel, {text: text})        // set text of selected elements
 _(sel, {append: content})   // append content to selected elements
 _(sel, {remove: true|fn})   // remove selected elements from dom if true
                             // or fn(element) returns true
@@ -68,30 +69,30 @@ _(sel, fn)                  // call fn for each elements of sel
 _(sel, {css: {style: value}})  // set style value's
 _(sel, {css: 'class'})         // set/overwrite classname to matching element(s)
 _(sel, {has: 'class'})         // return number of element with class
-_(sel, {css: '+C1-C2*C3'})     // add C1 to matching element(s) and
-                               //   remove C2 to matching element(s) and
-                               //   toggle C3 to matching element(s)
+_(sel, {css: '+C1!C2*C3'})     // + : add classname
+                               // ! : remove classname
+                               // * : toggle classname
 ```
 
 ### AJAX
 
 ```js
 _({url: '?'
-   type: 'GET'                                       ;default value
-   data: {var1:val1},
-   ok: function(data,xhr){},                         ;called on success
-   error: function(responsetext,xhr){},              ;called on error
-   done: function(responsetext,xhr){},               ;called after ok or error
-   datatype: 'application/json',                     ;default value
-   contenttype: 'application/x-www-form-urlencoded', ;default value
-   timeout: 30,                                      ;default value (in seconds)
+   type: 'GET'                                   ;default value
+   data: {var1:val1} || FormData(),
+   ok: (data,xhr) => {},                         ;called on success
+   error: (responsetext,xhr) => {},              ;called on error
+   done: (responsetext,xhr) => {},               ;called after ok or error
+   accept: 'application/json',                   ;default value (wanted answer format)
+   content: 'application/x-www-form-urlencoded', ;default value (payload format)
+   timeout: 30,                                  ;default value (in seconds)
    headers: {key: value}
 })
 ```
 
 *notes*:
 - return a XMLHttpRequest object
-- use `{contenttype: 'application/json'}` if you want your data automatically serialized in json.
+- use `{type: 'application/json'}` if you want your data automatically serialized in json.
 - default settings are in the object _.ajax and are overridable
 
 ### EVENTS
@@ -105,30 +106,41 @@ _(sel, {'-click': fn}})     // unbind fn from event for sel
 ### TOOLS
 
 ```js
-_.isObject(o)               // => return true if o={...} only
-_.isArray(o)                // => return true if o=[...] only
-_.isDefined(o)              // => return o!==undefined && o!==null
-_.forAll(o, fn)             // => .forEach(fn) apply to o (changed to an array if necessary)
+_.isDefined(o,...)          // => return all arguments!==undefined && all arguments!==null
+_.isFunction(fn)            // => return true if fn is a function
+_.isElement(o)              // => return true if o is a DOM Element
+_.isObject(o,...)           // => return true if all arguments are {...} only
+_.isArray(o,...)            // => return true if all arguments are [...] only
+_.asArray(o)                // => return o transformed into a "true" array
+_.forAll(o, fn)             // => asArray(o).forEach(fn)
 _.clone(o)                  // => return a deep clone of o
 _.merge(dst,src1,...)       // => return a deep merge src* into dst
+
 _.debounce(fn[, ms])        // => debounce 'fn' with 'ms' delay (default delay=200ms)
 
 //example
 _(window, {
-  resize: _.debounce(function(e){ console.log(e) }, 1000)
+  resize: _.debounce(e => { console.log(e) }, 1000)
 })
+
+_.store(k[,v])              // => set or get or unset data from local storage
+
+//example
+_.store('answer',{a: 42})   // => set answer
+_.store('answer')           // => get answer: {a: 42}
+_.store('answer',null)      // => unset answer
 ```
 
 ### PLUGIN: MAKE YOUR OWN METHOD
 
 ```js
 //find children elements matching a selector
-_.fn.find = function(sel,val){
-  var found = [];
-  _.forAll(sel, function(elem){
+_.fn.find = (sel,val) => {
+  let found = [];
+  _.forAll(sel, elem => {
     if( elem.querySelectorAll )
       found = found.concat(
-        [].slice.call(elem.querySelectorAll(val))
+        _.all(elem.querySelectorAll(val))
       );
   });
   return found;
