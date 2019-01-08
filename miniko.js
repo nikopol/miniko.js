@@ -361,11 +361,7 @@ _ = (doc => {
 
       has: (sel, cls) => {
         const c = cls.split(rexspaces);
-        let n = 0;
-        forall(sel, e => {
-          n += e.className.split(rexspaces).filter(f => c.indexOf(f) !== -1).length
-        });
-        return n;
+        return all(sel).reduce((n, e) => n + e.className.split(rexspaces).filter(f => c.indexOf(f) !== -1).length, 0);
       },
 
       on: (sel, events, fn) =>
