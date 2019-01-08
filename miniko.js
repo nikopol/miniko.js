@@ -1,7 +1,6 @@
-/*
-miniko.js 3.2
-=============
+//miniko.js 3.2 - https://github.com/nikopol/miniko.js
 
+/*
 minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
 
 the base of this mini-lib is to return a *true* Array of DOM Elements
