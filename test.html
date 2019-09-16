@@ -266,6 +266,10 @@
                () => _.store('__z',42) || _.store('__z') === 42,
                () => _.store('__z','test') || _.store('__z') === 'test',
                () => _.store('__z',null) || _.store('__z') === null)
+        .test('_.isEmpty(k[,v])', 'return true if all arguments are empty')
+          .are(() => _.isEmpty(null, undefined, '', []) === true,
+               () => _.isEmpty(null, [1]) === false,
+               () => _.isEmpty(null, "a") === false)
       ;
     };
 </script>

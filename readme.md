@@ -1,4 +1,4 @@
-miniko.js 3.2
+miniko.js 3.3
 =============
 
 minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
@@ -111,6 +111,7 @@ _.isFunction(fn)            // => return true if fn is a function
 _.isElement(o)              // => return true if o is a DOM Element
 _.isObject(o,...)           // => return true if all arguments are {...} only
 _.isArray(o,...)            // => return true if all arguments are [...] only
+_.isEmpty(o,…)              // => return true if all arguments are not defined or "" or []
 _.asArray(o)                // => return o transformed into a "true" array
 _.forAll(o, fn)             // => asArray(o).forEach(fn)
 _.clone(o)                  // => return a deep clone of o

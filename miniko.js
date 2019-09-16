@@ -1,4 +1,4 @@
-//miniko.js 3.2 - https://github.com/nikopol/miniko.js
+//miniko.js 3.3 - https://github.com/nikopol/miniko.js
 
 /*
 minimalist "all-in-one function" javascript swiss knife with a vanilla flavor.
@@ -15,7 +15,7 @@ _('#id').style.backgroundColor = 'red';
 
 *sample usage*:
 ```js
-_(() => { //when dom is ready...
+_(() => { //when dom is ready…
 
   const but = _(
     "<button>ok</button>",  //create a button
@@ -46,7 +46,7 @@ _(() => { //when dom is ready...
 ```js
 _(element)            // return the DOM Element provided
 _("#id")              // return the element by its id
-_("<el>...</el>")     // create the element and return it
+_("<el>…</el>")       // create the element and return it
 _("<a>.</a><b>.</b>") // create the elements and return them as an array
 _("tag, .classname")  // return an elements array matching the selection
 ```
@@ -106,17 +106,18 @@ _(sel, {'-click': fn}})     // unbind fn from event for sel
 ### TOOLS
 
 ```js
-_.isDefined(o,...)          // => return all arguments!==undefined && all arguments!==null
-_.isFunction(fn)            // => return true if fn is a function
-_.isElement(o)              // => return true if o is a DOM Element
-_.isObject(o,...)           // => return true if all arguments are {...} only
-_.isArray(o,...)            // => return true if all arguments are [...] only
-_.asArray(o)                // => return o transformed into a "true" array
-_.forAll(o, fn)             // => asArray(o).forEach(fn)
-_.clone(o)                  // => return a deep clone of o
-_.merge(dst,src1,...)       // => return a deep merge src* into dst
+_.isDefined(o,…)          // => return all arguments!==undefined && all arguments!==null
+_.isFunction(fn)          // => return true if fn is a function
+_.isElement(o)            // => return true if o is a DOM Element
+_.isObject(o,…)           // => return true if all arguments are {…} only
+_.isArray(o,…)            // => return true if all arguments are […] only
+_.isEmpty(o,…)            // => return true if all arguments are not defined or "" or []
+_.asArray(o)              // => return o transformed into a "true" array
+_.forAll(o, fn)           // => asArray(o).forEach(fn)
+_.clone(o)                // => return a deep clone of o
+_.merge(dst,src1,…)       // => return a deep merge src* into dst
 
-_.debounce(fn[, ms])        // => debounce 'fn' with 'ms' delay (default delay=200ms)
+_.debounce(fn[, ms])      // => debounce 'fn' with 'ms' delay (default delay=200ms)
 
 //example
 _(window, {
@@ -127,7 +128,7 @@ _.store(k[,v])              // => set or get or unset data from local storage
 
 //example
 _.store('answer',{a: 42})   // => set answer
-_.store('answer')           // => get answer: {a: 42}
+_.store('answer')           // => get answer: `{a: 42}`
 _.store('answer',null)      // => unset answer
 ```
 
@@ -188,6 +189,9 @@ _ = (doc => {
     //are defined ?
     def = are(o => o!==undefined && o!==null),
 
+    //are empty ?
+    ise = are(o => !def(o) || ((isa(o) || istr(o)) && o.length===0)),
+
     //merge arguments
     merge = function(dst){
       [].slice.call(arguments, 1).forEach(src => {
@@ -247,11 +251,12 @@ _ = (doc => {
     //performs an ajax call
     ajax = (o, fn) => {
       const xhr = new window.XMLHttpRequest(), isform = o.data && o.data instanceof FormData;
-      let wbody, timer, d, n;
+      let wbody, d, n;
       for( n in ajaxdft )
         o[n] = o[n] || ajaxdft[n];
+      if( o.body ) o.data = o.body;
       if( o.data ){
-        wbody = /POST|PUT/i.test(o.type);
+        wbody = /^P/i.test(o.type) || o.body;
         if( wbody ) {
           if( istr(o.data) || isform )
             d = o.data; //raw body
@@ -265,7 +270,6 @@ _ = (doc => {
       }
       xhr.onreadystatechange = () => {
         if( xhr.readyState===4 ) {
-          clearTimeout(timer);
           d = xhr.responseText;
           if( /json/i.test(o.accept) ) {
             try {
@@ -283,11 +287,10 @@ _ = (doc => {
       if( o.accept ) o.headers['Accept'] = o.accept;
       for(n in o.headers)
         xhr.setRequestHeader(n, o.headers[n]);
-      if( o.timeout )
-        timer = setTimeout(() => {
-          xhr.abort();
-          o.done(o.error('timeout',xhr));
-        }, o.timeout*1000);
+      if( o.timeout ) {
+        xhr.timeout = o.timeout * 1000;
+        xhr.ontimeout = () => o.done(o.error('timeout', xhr));
+      }
       xhr.send(d);
       return xhr;
     },
@@ -464,6 +467,7 @@ _ = (doc => {
   _.isArray = isa;
   _.asArray = all;
   _.isDefined = def;
+  _.isEmpty = ise;
   _.forAll = forall;
   _.ajax = ajaxdft = {
     type: 'GET',
